@@ -2,7 +2,7 @@ import React from 'react';
 import { Component } from 'react';
 import Navigation from './navigation';
 import axios from 'axios';
-import { InputGroup, InputGroupAddon, Input, Button } from 'reactstrap';
+import { InputGroup, InputGroupAddon, Input, Button, Table } from 'reactstrap';
 import Spinner from './Spinner/Spinner';
 
 class Home extends Component {
@@ -67,8 +67,44 @@ class Home extends Component {
             body = <Spinner/>
         }
         if(!this.state.loading && this.state.response) {
-            body = <p className="response">{JSON.stringify(this.state.permissionInfo)}</p>
+            let permissions = [...this.state.permissionInfo];
+            let table = permissions.map((e, index) => (
+                <tr>
+                    <th scope="row">{index+1}</th>
+                    <td>{e}</td>
+                </tr>
+            ));
+            const header = (
+                <div className="table">
+                <Table striped>
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Permission Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {table}
+                    </tbody>
+                </Table>
+                </div>
+            )
+            body = header;
         }
+
+        /*
+        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+        THIS https://reactstrap.github.io/components/tables/ 
+
+        TO DO:
+        1. Add Keys to Table + other meta data to table
+        2. Add button to refresh page
+        3. Make logo anchor tag smaller
+
+        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        */
+
         return (
             <div>
                 <Navigation/>
