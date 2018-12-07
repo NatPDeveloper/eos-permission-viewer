@@ -39,7 +39,7 @@ class Navigation extends Component {
                             <NavLink href="/about/">About</NavLink>
                         </NavItem>
                         <NavItem>
-                            <NavLink href="https://github.com/NatPDeveloper/eos-permission-viewer">GitHub</NavLink>
+                            <NavLink href="https://github.com/NatPDeveloper/eos-permission-viewer">Source Code</NavLink>
                         </NavItem>
                     </Nav>
                     </Collapse>
