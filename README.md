@@ -9,8 +9,9 @@ EOSPV is a simple permission viewer for the EOS blockchain. I made this in the h
 ### Project steps: ### 
 
 1. basic html / routes - **DONE**
-2. add API / render basic ui
-3. stylegit stat
+2. add API logic - **DONE**
+3. render ui with API response
+4. style
 
 ### How to Use When Completed: ### 
 

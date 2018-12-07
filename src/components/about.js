@@ -7,7 +7,7 @@ const about = (props) => {
     <div>
         <Navigation></Navigation>
         <div className="jumbotron">
-            <Jumbotron>
+            <Jumbotron className="jumbotron">
                 <h1 className="display-5">About EOS Permission Viewer</h1>
                 <p className="lead">EOSPV is a simple permission viewer for the EOS blockchain.  
                 I made this in the hopes of spreading account security awareness.
