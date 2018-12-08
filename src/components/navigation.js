@@ -27,7 +27,7 @@ class Navigation extends Component {
         return (
             <div>
                 <Navbar color="light" light expand="md">
-                    <img className="logo-img" src="../EOSPV_logo.png" alt="EOS Permission Viewer" id="logo"></img>
+                    <img className="logo-img" src={require('../logo/EOSPV_logo.png')} alt="EOS Permission Viewer" id="logo"></img>
                     <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                     <Nav className="ml-auto" pills>
