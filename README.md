@@ -1,4 +1,4 @@
-![](https://github.com/NatPDeveloper/eos-permission-viewer/blob/master/public/EOSPV_logo.png?raw=true)
+![](https://github.com/NatPDeveloper/eos-permission-viewer/blob/master/src/logo/EOSPV_logo.png?raw=true)
 
 - - - -
 
@@ -13,7 +13,7 @@ EOSPV is a simple permission viewer for the EOS blockchain. I made this in the h
 3. render ui with API response - **DONE**
 4. style - **DONE**
 5. error handling - **DONE**
-5. host on heroku
+5. host on heroku - **DONE**
 
 ### How to Use When Completed: ### 
 
