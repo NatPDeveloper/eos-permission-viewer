@@ -11,7 +11,9 @@ EOSPV is a simple permission viewer for the EOS blockchain. I made this in the h
 1. basic html / routes - **DONE**
 2. add API logic - **DONE**
 3. render ui with API response - **DONE**
-4. style
+4. style - **DONE**
+5. error handling - **DONE**
+5. host on heroku
 
 ### How to Use When Completed: ### 
 
