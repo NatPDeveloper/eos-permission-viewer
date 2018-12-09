@@ -6,7 +6,21 @@ import Spinner from './Spinner/Spinner';
 import ErrorAlert from './UI/alert'
 import Navigation from './navigation';
 
+// ADD Code Notes
+
 class Home extends Component {
+
+    /*
+        Setting up state
+        
+        permissionInfo          - data being stored to be mapped to table
+        account_name            - holding account_name for axios POST request to Scatter API
+        loading                 - loading boolean for spinner
+        response                - boolean used for conveying response has been received
+        notFound                - boolean used to render correct error message if not found
+        incorrectAccount length - boolean used to render correact error message if incorrect account length used
+    */
+
     state = {
         permissionInfo: {},
         account_name: "",
@@ -16,6 +30,10 @@ class Home extends Component {
         notFound: false,
         incorrectAccountLength: false
     }
+
+    /* 
+        Performing axios POST request to Scatter API 
+    */
 
     requestPermission = (e) => {
         e.preventDefault();
@@ -44,32 +62,36 @@ class Home extends Component {
         });
     }
 
+    /* 
+        Parsing permission info received from response.  If permission level is using keys one set of logic, if accounts, another set. 
+        In the future, may need to account for KEYS & ACCOUNTS in same permission level; however, no one in top 21 is set that way as of now
+    */
+
     parsePermissionInfo(response) {
         let arr = [];
-        // console.log(response[0].perm_name);
-        // console.log(response);
-        
-        for(let index in response) { 
-            if(response[index].required_auth.keys.length === 0 && response[index].required_auth.accounts.length !== 0){
-                let tempStore = [];
-                response[index].required_auth.accounts.forEach((i) => {
-                  tempStore.push(i.permission);  
-                })
-                // console.log(tempStore);
-                arr.push({
-                    perm_name: response[index].perm_name, 
-                    parent: response[index].parent,
-                    key: response[index].required_auth.accounts[0].permission.actor
-                    //tempStore
-                });
-            } else if(response[index].required_auth.keys.length === 1) {
-                arr.push({
-                    perm_name: response[index].perm_name, 
-                    parent: response[index].parent,
-                    key: response[index].required_auth.keys[0].key
-                });
+
+        response.forEach((i, index) => {
+            let temp = {
+              perm_name: i.perm_name,
+              parent: i.parent,
+              threshold: i.required_auth.threshold
+            };
+            if(i.required_auth.keys.length){
+              let t = ""
+              i.required_auth.keys.forEach((i, index) => {
+                t += i.weight + " - " + i.key + ", ";
+              })
+              temp.keys = t.substring(0, t.length - 2);
             }
-        }
+            if(i.required_auth.accounts.length){
+              let t = ""
+              i.required_auth.accounts.forEach((i, index) => {
+                t += i.weight + " - " + i.permission.actor + "@" + i.permission.permission + ", ";
+              })
+              temp.keys = t.substring(0, t.length - 2);
+            }
+            arr.push(temp);
+          })
 
         return arr;
     }
@@ -79,12 +101,14 @@ class Home extends Component {
     }
 
     render() {
+
+        /* Setting up variables to potentially ocupy JSX for return */
+
         let match;
         let notFound;
         let warning;
 
         let body = (
-
             <div className="input">
                 <InputGroup size="lg">
                     <InputGroupAddon addonType="prepend">Account :</InputGroupAddon>
@@ -122,24 +146,31 @@ class Home extends Component {
             )
         }
 
+        /* Mapping table object */
+
         if(!this.state.loading && this.state.response) {
             let table;
             let permissions = [...this.state.permissionInfo];
-            console.log(permissions);
             let temp = permissions.filter((key) => {
                 return key.perm_name === "active" || key.perm_name === "owner"
             })
             
-            if(temp[0].key === temp[1].key && temp[0].key.length > 52){
+            /* 
+                account for if treshold is above 9, but calling threshold and adding 3 (" - ") to it to ensure if threshold is 
+                2+ digit number that key is still 53 characters to trigger error
+            */
+            if(temp[0].keys === temp[1].keys && temp[0].keys.substring(temp[0].threshold + 3).length === 53){
                 match = true;
             }
-
+            
+            console.log(permissions);
             table = permissions.map((e, index) => (
                 <tr key={index}>
                     <th scope="row">{index+1}</th>
                     <td>{e.perm_name}</td>
                     <td>{e.parent}</td>
-                    <td>{e.key}</td>
+                    <td>{e.threshold}</td>
+                    <td>{e.keys}</td>
                 </tr>
             ));
 
@@ -151,7 +182,8 @@ class Home extends Component {
                             <th className="tableAccountName">{this.state.account_name}</th>
                             <th>Permission Name</th>
                             <th>Permission Level Parent</th>
-                            <th>Public Key / Accounts</th>
+                            <th>Threshold</th>
+                            <th>Weight - Public Key / Accounts</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -161,7 +193,6 @@ class Home extends Component {
                     <NavLink className="refresh" href="/" active>Try another account!</NavLink>
                 </div>
             )
-
             body = header;
         }
 
