@@ -2,6 +2,8 @@
 
 - - - -
 
+Link: https://eos-permission-viewer.herokuapp.com/
+
 ### About the project: ### 
 
 EOSPV is a simple permission viewer for the EOS blockchain. I made this in the hopes of spreading account security awareness. If the EOS User Agreement is implemented in its current capacity, [Article XII — Personal Security](https://medium.com/eos-new-york/eos-platform-user-agreement-v2-0-c0cc2496e650) will remove ECAF's ability to arbitrate on behalf of those who have had their keys stolen or phished.  My intention is to drive awareness of the importance of using the active key pair and reducing the use of the owner key pair.
