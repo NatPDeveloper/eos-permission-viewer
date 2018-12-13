@@ -4,6 +4,12 @@
   margin-top: 100px;
 }
 
+.permissionInput{
+  margin: auto;
+  margin-top: 100px;
+  width: 50%;
+}
+
 .jumbotron{
   width: 75%;
   margin: auto;

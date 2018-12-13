@@ -6,13 +6,22 @@ import Spinner from './Spinner/Spinner';
 import ErrorAlert from './UI/alert'
 import Navigation from './navigation';
 
-// ADD Code Notes
+/*
+    Things to do:
+
+    1. Figure out where to connect to scatter and how to pass around the scatter login
+        Need to use redux
+    2. How to properly null out scatter reference
+    3. Insert modal to explain exactly what the user is doing
+    4. Insert axios post request to chain using HTTPs
+    5. Test on Jungle
+*/
 
 class Home extends Component {
 
     /*
         Setting up state
-        
+
         permissionInfo          - data being stored to be mapped to table
         account_name            - holding account_name for axios POST request to Scatter API
         loading                 - loading boolean for spinner
@@ -31,8 +40,8 @@ class Home extends Component {
         incorrectAccountLength: false
     }
 
-    /* 
-        Performing axios POST request to Scatter API 
+    /*
+        Performing axios POST request to Scatter API
     */
 
     requestPermission = (e) => {
@@ -62,8 +71,8 @@ class Home extends Component {
         });
     }
 
-    /* 
-        Parsing permission info received from response.  If permission level is using keys one set of logic, if accounts, another set. 
+    /*
+        Parsing permission info received from response.  If permission level is using keys one set of logic, if accounts, another set.
         In the future, may need to account for KEYS & ACCOUNTS in same permission level; however, no one in top 21 is set that way as of now
     */
 
@@ -95,7 +104,7 @@ class Home extends Component {
 
         return arr;
     }
-    
+
     handleChange = (event) => {
         this.setState({account_name: event.target.value})
     }
@@ -112,15 +121,15 @@ class Home extends Component {
             <div className="input">
                 <InputGroup size="lg">
                     <InputGroupAddon addonType="prepend">Account :</InputGroupAddon>
-                    <Input 
+                    <Input
                         onChange={this.handleChange}
                         placeholder="Your account name here :)"
                     />
                 </InputGroup>
-                <Button onClick={(e) => this.requestPermission(e)} 
-                    type="submit" 
-                    className="primary_button" 
-                    color="primary" 
+                <Button onClick={(e) => this.requestPermission(e)}
+                    type="submit"
+                    className="primary_button"
+                    color="primary"
                     size="lg" block>Submit!
                 </Button>
             </div>
@@ -154,15 +163,14 @@ class Home extends Component {
             let temp = permissions.filter((key) => {
                 return key.perm_name === "active" || key.perm_name === "owner"
             })
-            
-            /* 
-                account for if treshold is above 9, but calling threshold and adding 3 (" - ") to it to ensure if threshold is 
-                2+ digit number that key is still 53 characters to trigger error
+
+            /*
+                threshold could be aboce 1 in length, so yo account, calling substring with thresholds length to trimp string to just key if there
             */
             if(temp[0].keys === temp[1].keys && temp[0].keys.substring(temp[0].threshold + 3).length === 53){
                 match = true;
             }
-            
+
             console.log(permissions);
             table = permissions.map((e, index) => (
                 <tr key={index}>
@@ -201,7 +209,7 @@ class Home extends Component {
                 <ErrorAlert/>
             )
         }
-        
+
         return (
             <div>
                 <Navigation/>
