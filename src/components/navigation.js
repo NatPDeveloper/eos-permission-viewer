@@ -45,7 +45,16 @@ class Navigation extends Component {
                 port:443,
                 chainId:'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473'
             },
-            loggedIn: false
+            loggedIn: false,
+            account: {
+
+            },
+            scatter: {
+
+            },
+            eos: {
+
+            }
         };
     }
 
@@ -64,19 +73,10 @@ class Navigation extends Component {
             const requiredFields = { accounts:[this.state.network] };
             scatter.getIdentity(requiredFields).then(() => {
         
-                const account = scatter.identity.accounts.find(x => x.blockchain === 'eos');
-        
                 const eosOptions = { expireInSeconds:60 };
-        
-                // const eos = scatter.eos(this.state.network, Eos, eosOptions);
-                // const transactionOptions = { authorization:[`${account.name}@${account.authority}`] };
-        
-                // eos.contract('eosezchatnat').then(contract => {  // contract account needs to change when going to jungle..
-                //     contract.sendmsg(account.name, "id here", "message", transactionOptions)
-                //   }).catch(e => {
-                //       console.log("error", e);
-                //   })
-                this.setState({loggedIn: true});
+                const account = scatter.identity.accounts.find(x => x.blockchain === 'eos');                
+                const eos = scatter.eos(this.state.network, Eos, eosOptions);
+                this.setState({loggedIn: true, account: account, scatter: scatter, eos: eos});
             }).catch(error => {
                 console.error(error);
             });
@@ -94,11 +94,40 @@ class Navigation extends Component {
         });
     }
 
+    action = () => {   
+        const config = ({
+            actions: [{
+                account: 'eosio',
+                name: 'updateauth',
+                authorization: [{
+                    actor: this.state.account.name,
+                    permission: this.state.account.authority,
+                }],
+                data: {
+                    account: this.state.account.name,
+                    permission: 'active',
+                    parent: 'owner',
+                    auth: {
+                        "threshold": 1,
+                        "keys": [{
+                            "key": "EOS56mYJBd4UyA5vmi2Xtyj5JxkB5Ub6oBKy5ipPn2Y1jEbqhCKwq",
+                            "weight": 1
+                            }
+                        ]
+                    }
+                }
+            }]
+        });
+        
+        this.state.eos.transact(config);
+    }
+
     render() {
 
         let loginButtons;
-
+        console.log(this.state.loggedIn);
         if(this.props.location.pathname === "/change-permission/" && this.state.loggedIn){
+
             loginButtons = (
                 <NavItem>
                     <Button onClick={this.logout}  id="scatterLogout" color="primary">Logout</Button>{' '}
@@ -132,6 +161,9 @@ class Navigation extends Component {
                             <NavLink href="https://github.com/NatPDeveloper/eos-permission-viewer">Source Code</NavLink>
                         </NavItem>
                         {loginButtons}
+                        <NavItem>
+                            <Button onClick={this.action}  id="scatterLogout" color="primary">Action</Button>{' '}
+                        </NavItem>
                     </Nav>
                     </Collapse>
                 </Navbar>
