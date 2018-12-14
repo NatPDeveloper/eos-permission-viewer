@@ -11,12 +11,11 @@ import {
     Button
 } from 'reactstrap';
 
-/* Importing Scatter Wallet & eosjs */
+// Changed back to eosjs 16, 20 was throwing error
 import Eos from 'eosjs';
 import ScatterJS from 'scatterjs-core';
-import ScatterEOS from 'scatterjs-plugin-eosjs2';
-
-ScatterJS.plugins( new ScatterEOS() );
+import ScatterEOS from 'scatterjs-plugin-eosjs';
+// import ScatterEOS from 'scatterjs-plugin-eosjs2';
 
 class Navigation extends Component {
 
@@ -34,27 +33,14 @@ class Navigation extends Component {
             notFound: false,
             incorrectAccountLength: false,
             network: {
-                // blockchain:'eos',
-                // protocol:'https',
-                // host:'nodes.get-scatter.com',
-                // port:443,
-                // chainId:'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
                 blockchain:'eos',
                 protocol:'https',
                 host:'jungle2.cryptolions.io',
                 port:443,
                 chainId:'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473'
             },
-            loggedIn: false,
-            account: {
-
-            },
-            scatter: {
-
-            },
-            eos: {
-
-            }
+            account: null,
+            scatter: null
         };
     }
 
@@ -64,76 +50,59 @@ class Navigation extends Component {
         });
     }
 
+    componentDidMount() {
+        ScatterJS.plugins( new ScatterEOS() );
+        ScatterJS.scatter.connect('EOS Permission Viewer').then(connected => {
+            if(connected){
+                // this.props.login(ScatterJS.scatter);
+                this.setState({scatter: ScatterJS.scatter})
+                window.ScatterJS = null;
+            }
+        });
+    }
+
     login = () => {
-        ScatterJS.scatter.connect("EOS Permission Viewer").then(connected => {
-            // User does not have Scatter Desktop, Mobile or Classic installed.
-            if(!connected) return false;
-    
-            const scatter = ScatterJS.scatter;
-            const requiredFields = { accounts:[this.state.network] };
-            scatter.getIdentity(requiredFields).then(() => {
+        const scatter = this.state.scatter;
+        const requiredFields = { accounts:[this.state.network] };
+        scatter.getIdentity(requiredFields).then(() => {
         
-                const eosOptions = { expireInSeconds:60 };
-                const account = scatter.identity.accounts.find(x => x.blockchain === 'eos');                
-                const eos = scatter.eos(this.state.network, Eos, eosOptions);
-                this.setState({loggedIn: true, account: account, scatter: scatter, eos: eos});
-            }).catch(error => {
-                console.error(error);
-            });
-            window.ScatterJS = null;
+            const account = scatter.identity.accounts.find(x => x.blockchain === 'eos');                
+            console.log(account)
+            this.setState({account: account});
+        })
+        .catch(error => {
+            console.error(error);
         });
     }
 
     logout = () => {
-        ScatterJS.scatter.connect("EOS Permission Viewer").then(connected => {
-            const scatter = ScatterJS.scatter;
-            scatter.forgetIdentity()
-            this.setState({loggedIn: false});
-            window.ScatterJS = null;
-            alert('Logged Out Successfully')
-        });
+        this.state.scatter.forgetIdentity()
+        this.setState({loggedIn: false, account: null});
+        alert('Logged Out')
     }
 
-    action = () => {   
-        const config = ({
-            actions: [{
-                account: 'eosio',
-                name: 'updateauth',
-                authorization: [{
-                    actor: this.state.account.name,
-                    permission: this.state.account.authority,
-                }],
-                data: {
-                    account: this.state.account.name,
-                    permission: 'active',
-                    parent: 'owner',
-                    auth: {
-                        "threshold": 1,
-                        "keys": [{
-                            "key": "EOS56mYJBd4UyA5vmi2Xtyj5JxkB5Ub6oBKy5ipPn2Y1jEbqhCKwq",
-                            "weight": 1
-                            }
-                        ]
-                    }
-                }
-            }]
-        });
-        
-        this.state.eos.transact(config);
+    action = () => {
+        const scatter = this.state.scatter;
+        const eosOptions = { expireInSeconds:60 };
+        const eos = scatter.eos(this.state.network, Eos, eosOptions);
+        const transactionOptions = { authorization:[`${this.state.account.name}@${this.state.account.authority}`] };
+        eos.contract('eosezchatnat').then(contract => {  // contract account needs to change when going to jungle..
+            contract.sendmsg(this.state.account.name, "chat_id", "message", transactionOptions)
+          }).catch(e => {
+              console.log("error", e);
+          })
     }
 
     render() {
 
         let loginButtons;
-        console.log(this.state.loggedIn);
-        if(this.props.location.pathname === "/change-permission/" && this.state.loggedIn){
-
+        if(this.props.location.pathname === "/change-permission/" && this.state.account){
             loginButtons = (
                 <NavItem>
                     <Button onClick={this.logout}  id="scatterLogout" color="primary">Logout</Button>{' '}
                 </NavItem>
             )
-        } else if (this.props.location.pathname === "/change-permission/" && this.state.loggedIn === false){
+        } else if (this.props.location.pathname === "/change-permission/"){
             loginButtons = (
                 <NavItem>
                     <Button onClick={this.login} id="scatterLogin" color="primary">Scatter Login</Button>{' '}
@@ -160,10 +129,10 @@ class Navigation extends Component {
                         <NavItem>
                             <NavLink href="https://github.com/NatPDeveloper/eos-permission-viewer">Source Code</NavLink>
                         </NavItem>
-                        {loginButtons}
                         <NavItem>
                             <Button onClick={this.action}  id="scatterLogout" color="primary">Action</Button>{' '}
                         </NavItem>
+                        {loginButtons}
                     </Nav>
                     </Collapse>
                 </Navbar>
