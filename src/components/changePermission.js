@@ -1,6 +1,13 @@
 import React, { Component } from 'react';
 import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import Navigation from './navigation';
+import { connect } from 'react-redux'
+
+// Changed back to eosjs 16, 20 was throwing error
+import Eos from 'eosjs';
+import ScatterJS from 'scatterjs-core';
+import ScatterEOS from 'scatterjs-plugin-eosjs';
+// import ScatterEOS from 'scatterjs-plugin-eosjs2';
 
 class changePermission extends Component {
 
@@ -54,4 +61,12 @@ class changePermission extends Component {
     }
 }
 
-export default changePermission;
+const mapStateToProps = state => {
+    return {
+        network: state.network,
+        account: state.account,
+        scatter: state.scatter
+    }
+}
+
+export default connect(mapStateToProps)(changePermission);

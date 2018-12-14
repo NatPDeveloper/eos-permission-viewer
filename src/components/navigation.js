@@ -1,5 +1,6 @@
 import React from 'react';
 import { Component } from 'react';
+import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom';
 import {
     Collapse,
@@ -10,6 +11,7 @@ import {
     NavLink,
     Button
 } from 'reactstrap';
+import * as actions from '../store/actions/auth';
 
 // Changed back to eosjs 16, 20 was throwing error
 import Eos from 'eosjs';
@@ -31,16 +33,7 @@ class Navigation extends Component {
             loading: false,
             response: false,
             notFound: false,
-            incorrectAccountLength: false,
-            network: {
-                blockchain:'eos',
-                protocol:'https',
-                host:'jungle2.cryptolions.io',
-                port:443,
-                chainId:'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473'
-            },
-            account: null,
-            scatter: null
+            incorrectAccountLength: false
         };
     }
 
@@ -54,21 +47,20 @@ class Navigation extends Component {
         ScatterJS.plugins( new ScatterEOS() );
         ScatterJS.scatter.connect('EOS Permission Viewer').then(connected => {
             if(connected){
-                // this.props.login(ScatterJS.scatter);
-                this.setState({scatter: ScatterJS.scatter})
+                this.props.onSetScatter(ScatterJS.scatter)
                 window.ScatterJS = null;
             }
         });
     }
 
     login = () => {
-        const scatter = this.state.scatter;
-        const requiredFields = { accounts:[this.state.network] };
+        const scatter = this.props.scatter;
+        const requiredFields = { accounts:[this.props.network] };
         scatter.getIdentity(requiredFields).then(() => {
         
             const account = scatter.identity.accounts.find(x => x.blockchain === 'eos');                
             console.log(account)
-            this.setState({account: account});
+            this.props.onSetAccount(account)
         })
         .catch(error => {
             console.error(error);
@@ -76,33 +68,34 @@ class Navigation extends Component {
     }
 
     logout = () => {
-        this.state.scatter.forgetIdentity()
-        this.setState({loggedIn: false, account: null});
+        this.props.scatter.forgetIdentity()
+        this.props.onLogout();
         alert('Logged Out')
     }
 
     action = () => {
-        const scatter = this.state.scatter;
+        const scatter = this.props.scatter;
         const eosOptions = { expireInSeconds:60 };
-        const eos = scatter.eos(this.state.network, Eos, eosOptions);
-        const transactionOptions = { authorization:[`${this.state.account.name}@${this.state.account.authority}`] };
-        eos.contract('eosezchatnat').then(contract => {  // contract account needs to change when going to jungle..
-            contract.sendmsg(this.state.account.name, "chat_id", "message", transactionOptions)
+        const eos = scatter.eos(this.props.network, Eos, eosOptions);
+        const transactionOptions = { authorization:[`${this.props.account.name}@${this.props.account.authority}`] };
+        eos.contract('eosezchatnat').then(contract => {
+            contract.sendmsg(this.props.account.name, "chat_id", "message", transactionOptions)
           }).catch(e => {
               console.log("error", e);
+              alert("There was an issue with sending this transaction, please login and try again")
           })
     }
 
     render() {
 
         let loginButtons;
-        if(this.props.location.pathname === "/change-permission/" && this.state.account){
+        if(this.props.loggedIn){
             loginButtons = (
                 <NavItem>
                     <Button onClick={this.logout}  id="scatterLogout" color="primary">Logout</Button>{' '}
                 </NavItem>
             )
-        } else if (this.props.location.pathname === "/change-permission/"){
+        } else {
             loginButtons = (
                 <NavItem>
                     <Button onClick={this.login} id="scatterLogin" color="primary">Scatter Login</Button>{' '}
@@ -141,4 +134,21 @@ class Navigation extends Component {
     }
 }
 
-export default withRouter(Navigation);
+const mapStateToProps = state => {
+    return {
+        network: state.network,
+        account: state.account,
+        scatter: state.scatter,
+        loggedIn: state.loggedIn
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onSetScatter: (scatter) => dispatch(actions.setScatter(scatter)),
+        onSetAccount: (account) => dispatch(actions.setAccount(account)),
+        onLogout: () => dispatch(actions.logout())
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Navigation));

@@ -1,14 +1,21 @@
 import * as actionTypes from './actionTypes';
 
-export const login = (scatter) => {
+export const setScatter = (scatter) => {
     return{
-        type: actionTypes.LOGIN,
+        type: actionTypes.SET_SCATTER,
         scatter: scatter
     };
 }
 
-// export const logout = () => {
-//     return{
-//         type: actionTypes.LOGOUT
-//     };
-// }
+export const setAccount = (account) => {
+    return{
+        type: actionTypes.SET_ACCOUNT,
+        account: account
+    };
+}
+
+export const logout = () => {
+    return{
+        type: actionTypes.LOGOUT
+    };
+}
