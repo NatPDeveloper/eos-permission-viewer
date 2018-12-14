@@ -26,6 +26,26 @@ const logout = (state, action) => {
     return updateObject(state, { loggedIn: false })
 }
 
+// const setScatter = (state, action) => {
+//     return {
+//         scatter: action.scatter
+//     }
+// }
+
+// const setAccount = (state, action) => {
+//     return {
+//         scatter: action.scatter,
+//         loggedIn: true
+//     }
+// }
+
+// const logout = (state, action) => {
+//     return {
+//         scatter: action.scatter,
+//         loggedIn: false
+//     }
+// }
+
 const reducer = (state = inititalState, action) => {
     switch(action.type) {
         case actionTypes.SET_SCATTER:
