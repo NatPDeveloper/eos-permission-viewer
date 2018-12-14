@@ -19,3 +19,9 @@ export const logout = () => {
         type: actionTypes.LOGOUT
     };
 }
+
+export const sendResult = (result) => {
+    return{
+        type: actionTypes.SEND_RESULT
+    };
+}

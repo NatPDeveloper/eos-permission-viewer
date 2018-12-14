@@ -2,12 +2,9 @@ import React, { Component } from 'react';
 import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import Navigation from './navigation';
 import { connect } from 'react-redux'
+import * as actions from '../store/actions/auth';
 
-// Changed back to eosjs 16, 20 was throwing error
-import Eos from 'eosjs';
-import ScatterJS from 'scatterjs-core';
-import ScatterEOS from 'scatterjs-plugin-eosjs';
-// import ScatterEOS from 'scatterjs-plugin-eosjs2';
+import { Api, JsonRpc } from 'eosjs';
 
 class ChangePermission extends Component {
 
@@ -42,20 +39,35 @@ class ChangePermission extends Component {
         // Function won't run outside of render for some reason..
 
         const changePermissionLevel = () => {
-            // console.log(this.props.network);
+            
+            const rpc = new JsonRpc(this.props.network.fullhost());
             const scatter = this.props.scatter;
-            const eosOptions = { expireInSeconds:60 };
-            const eos = scatter.eos(this.props.network, Eos, eosOptions);
-            const transactionOptions = { authorization:[`${this.props.account.name}@${this.props.account.authority}`] };
-
-            eos.contract('eosezchatnat').then(contract => {
-                contract.sendmsg(this.props.account.name, "chat_id", "message", transactionOptions)
-              }).catch(e => {
-                  console.log("error", e);
-                  alert("There was an issue with sending this transaction, please login and try again")
-              })
-            // eos.transact(config);
-        }
+            const eos = scatter.eos(this.props.network, Api, {rpc});
+            const completed = res => {
+                this.props.onSendResult(res);
+                // this.props.sending = false;
+            }
+            eos.transact({
+                    actions: [{
+                        account: 'eosezchatnat',
+                        name: 'sendmsg',
+                        authorization: [{
+                            actor: this.props.account.name,
+                            permission: this.props.account.authority,
+                        }],
+                        data: {
+                            user: this.props.account.name,
+                            msg_id: "chatId",
+                            msg: "hi"
+                        },
+                    }]
+                }, {
+                    blocksBehind: 3,
+                    expireSeconds: 30,
+                });
+                completed(this.props.result);
+                console.log(this.props.result);
+            }
         return (
             <div>
                 <Navigation></Navigation>
@@ -81,8 +93,16 @@ const mapStateToProps = state => {
     return {
         network: state.network,
         account: state.account,
-        scatter: state.scatter
+        scatter: state.scatter,
+        result: state.result,
+        sending: state.sending
     }
 }
 
-export default connect(mapStateToProps)(ChangePermission);
+const mapDispatchToProps = dispatch => {
+    return {
+        onSendResult: (result) => dispatch(actions.sendResult(result))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ChangePermission);
